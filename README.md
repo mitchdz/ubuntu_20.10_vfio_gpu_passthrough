@@ -1,6 +1,6 @@
 # Ubuntu 20.04 VFIO Windows 10 VM with PCI passthrough Guide
 
-These notes document the setup for my personal computer and situation. Your situation may *and probably is* quite a bit different. Use this guide as a reference.
+These notes document the setup for my personal computer and situation. Your situation may be *and probably is* quite a bit different. Use this guide as a reference.
 
 ---
 
@@ -195,4 +195,167 @@ Notice the text `Kernel driver in use: vfio-pci` If it says nouveau there instea
 
 ---
 
-## 8. Have Windows 10 ISO and virtio drivers downloaded
+## Step 8) Have Windows 10 ISO downloaded
+
+You can receive the ISO here - https://www.microsoft.com/en-us/software-download/windows10ISO
+
+## Step 9) Create a Network Bridge
+
+First, we need to determine what our networking situation is like. I am hardwired, and you really should be as well if you have gotten this far.
+
+```
+$ ip a
+mitch@lightning: /etc/netplan $ ip a
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host
+       valid_lft forever preferred_lft forever
+2: eno2: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc fq_codel state UP group default qlen 1000
+    link/ether <ETHERENT MAC> brd ff:ff:ff:ff:ff:ff
+    altname enp0s31f6
+    inet 192.168.1.200/24 brd 192.168.1.255 scope global dynamic noprefixroute eno2
+       valid_lft 71635sec preferred_lft 71635sec
+    inet6 <ipv6 address> scope link noprefixroute
+       valid_lft forever preferred_lft forever
+3: wlo1: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 qdisc noqueue state DOWN group default qlen 1000
+    link/ether 04:ea:56:32:82:2d brd ff:ff:ff:ff:ff:ff
+    altname wlp0s20f3
+4: virbr0: <NO-CARRIER,BROADCAST,MULTICAST,UP> mtu 1500 qdisc noqueue state DOWN group default qlen 1000
+    link/ether 52:54:00:ba:92:8f brd ff:ff:ff:ff:ff:ff
+    inet 192.168.122.1/24 brd 192.168.122.255 scope global virbr0
+       valid_lft forever preferred_lft forever
+5: virbr0-nic: <BROADCAST,MULTICAST> mtu 1500 qdisc fq_codel master virbr0 state DOWN group default qlen 1000
+    link/ether 52:54:00:ba:92:8f brd ff:ff:ff:ff:ff:ff
+```
+the ethernet port that is being used it titled **eno2**. Notice the existence of virbr0 and virbr0-nic that are auto-created for qemu-kvm. These will not be enough to connect to the outside world, so we need to create our own network bridge.
+
+To create the bridge we will use netplan.
+
+
+```
+$ cd /etc/netplan/
+$ sudo cp 01-network-manager-all.yaml 01-network-manager-all.bak
+$ sudo vim 01-network-manager-all.yaml
+```
+
+edit the yaml file to look like such (filling in your own hardware device and desired IP addresses)
+
+```
+network:
+  version: 2
+  renderer: networkd
+  ethernets:
+    eno2:
+      dhcp4: false
+      dhcp6: false
+  bridges:
+    br0:
+      interfaces: [eno2]
+      addresses: [192.168.1.199/24]
+      gateway4: 192.168.1.1
+      nameservers:
+        addresses: [8.8.8.8,8.8.4.4]
+      parameters:
+        stp: false
+        forward-delay: 0
+      dhcp4: no
+      dhcp6: no
+```
+
+Update the interfaces
+
+```
+$ sudo netplan apply
+```
+
+Check the interfaces now
+
+
+```
+$ ip a
+---
+6: br0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP group default qlen 1000
+    link/ether 00:d8:61:55:3d:d9 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.1.199/24 brd 192.168.1.255 scope global br0
+       valid_lft forever preferred_lft forever
+    inet6 fe80::2d8:61ff:fe55:3dd9/64 scope link
+       valid_lft forever preferred_lft forever
+
+```
+
+## Step 10) Create The Windows10 Virtual Machine
+
+* Click the highlighted icon to create a new virtual machine
+
+![GitHub Logo](pics/guide_1.png)
+
+* Choose `Local install media (ISO image or CDROM)`
+
+![GitHub Logo](pics/guide_2.png)
+
+* Select your windows 10 iso that you downloaded
+* check `Automatically detect from the installation media / source`
+
+![GitHub Logo](pics/guide_3.png)
+
+* sleect the amount of RAM and CPUs that you want
+
+![GitHub Logo](pics/guide_5.png)
+
+* Disable Storage because we will be passing through the NVME drive
+  * if you are not going to pass through an entire PCIe lane for the drive, the process is quite a bit different and you will need the fedora signed virto-driver.
+
+![GitHub Logo](pics/guide_6.png)
+
+* Check `Customize configuration before install`
+* select `Bridge br0: Host device eno2` (or whatever the name of your bridge is)
+
+![GitHub Logo](pics/guide_7.png)
+
+* un-check Copy Host CPU configuration
+  * type in `host-passthrough` for Model
+* Manually set CPU topology
+
+**note:** current allocation should be Maximum allocation (this picture wrongly shows 1)
+
+![GitHub Logo](pics/guide_8.png)
+
+**NOTE:** I ended up removing the Display Spice, Console, Channel spice, Video QXL, and Tablet devices for my setup to actually show on the physical monitor. You may need to as well
+
+
+
+## Step 11) OPTIONAL hide fact that OS is virtualized from CPU and GPU
+
+Microsoft is a cool company that when they see their OS is being virtualized they send the Nvidia GPU the infamous error 43 so you will n ot be able to use Nvidia drivers, thus you will be stuck with a 600x800 window. To circumvent this we will need to add a few lines to the machine XML using virsh edit
+
+**note:** my virtual machine is titled 'win10', if you named your something else, replace your name where win10 is
+
+```
+virsh edit win10
+```
+
+You will need to add the following lines `<vendor_id state="on" value="1234567890ab"/>`, `<ioapic driver="kvm"/>`, `<kvm> <hidden state="on"/> </kvm>` Manually. Below is the snippet from my XML file showcasing where you need to put the values.
+
+```
+---
+<features>
+  <acpi/>
+  <apic/>
+  <hyperv>
+    <relaxed state="on"/>
+    <vapic state="on"/>
+    <spinlocks state="on" retries="8191"/>
+    <vendor_id state="on" value="1234567890ab"/>
+  </hyperv>
+  <kvm>
+    <hidden state="on"/>
+  </kvm>
+  <vmport state="off"/>
+  <ioapic driver="kvm"/>
+</features>
+---
+```
+
+virsh will use your default editor, so save from whatever editor you are using.
