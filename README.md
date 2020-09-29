@@ -9,11 +9,13 @@ Storage (GUEST) : NVME M.2 Drive
 Storage (HOST)  : SATA SSD Drive
 
 # Setup
+
 1. Put Host GPU is in PCIe slot 1
-2. Put Guest GPU in PCIe slot 2.
+2. Put Guest GPU in PCIe slot 2
 3. Plug one monitor into first GPU, second monitor into second GPU
-4. Install Ubuntu 20.04 into SSD.
-5. build and compile linux kernel with ACS patch (only if your mobo does not properly separate IOMMU Groups)
+4. Enable Intel VT-x and VT-d
+5. Install Ubuntu 20.04 into SSD
+6. build and compile linux kernel with ACS patch (only if your mobo does not properly separate IOMMU Groups)
 
 to do this, simply run this script from mdPlusPlus:
 https://gist.github.com/mdPlusPlus/031ec2dac2295c9aaf1fc0b0e808e21a
