@@ -326,11 +326,11 @@ $ ip a
 
 
 
-## Step 11) OPTIONAL hide fact that OS is virtualized from CPU and GPU
+## Step 11) OPTIONAL (if you are stuck with 600x800 resolution) hide fact that OS is virtualized from CPU and GPU
 
-Microsoft is a cool company that when they see their OS is being virtualized they send the Nvidia GPU the infamous error 43 so you will n ot be able to use Nvidia drivers, thus you will be stuck with a 600x800 window. To circumvent this we will need to add a few lines to the machine XML using virsh edit
+Microsoft is a cool company that when they see their OS is being virtualized they send the Nvidia GPU the infamous error 43 so you will not be able to use Nvidia drivers, thus you will be stuck with a 600x800 window. To circumvent this we will need to add a few lines to the machine XML using virsh edit
 
-**note:** my virtual machine is titled 'win10', if you named your something else, replace your name where win10 is
+**note:** my virtual machine is titled 'win10', if you named yours something else, replace your name where win10 is
 
 ```
 virsh edit win10
