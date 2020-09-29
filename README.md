@@ -26,12 +26,23 @@ $ sudo apt install qemu-kvm \
 
 
 
-1. Put Host GPU is in PCIe slot 1
-2. Put Guest GPU in PCIe slot 2
-3. Plug one monitor into first GPU, second monitor into second GPU
-4. Enable Intel VT-x and VT-d
-5. Install Ubuntu 20.04 into SSD
-6. build and compile linux kernel with ACS patch (only if your mobo does not properly separate IOMMU Groups)
+## Step 1) Hook up required Hardware
+* Plug Host GPU is in PCIe slot 1
+* Plug Guest GPU in PCIe slot 2
+* Plug one monitor into first GPU, second monitor into second GPU
+* have two drives (one for Ubuntu host, one for Win10 guest)
+  * **NOTE:** I am using NVME for Win10 guest, Sata SSD for Ubuntu host because my motherboard
+  has only one IOMMU group for the sata controller. To circumvent this, you could purchase a PCIe->SATA adapter and pass through the PCIe->SATA device
+
+## Step 2) Enable BIOS/UEFI features
+* Enable Intel VT-x and VT-d (For AMD chips it should be called SVM)
+
+## Step 5) Install Ubuntu 20.04
+
+## Step 6) *build and compile linux kernel with ACS patch
+*Only if your motherboard/cpu does not properly separate IOMMU groups
+
+**NOTE:** using ACS patched kernel is a major security violation because it may potentially allow DMA to devices the VM should not have access to. This roughly translates to creating a way to break out from the guest VM to a host VM.
 
 to do this, simply run this script from mdPlusPlus:
 https://gist.github.com/mdPlusPlus/031ec2dac2295c9aaf1fc0b0e808e21a
@@ -44,7 +55,7 @@ Do you want to apply the acs override patch? Kernels below 4.10 are not supporte
 Do you want to apply the experimental AMD AGESA patch to fix VFIO setups on AGESA 0.0.7.2 and newer? [y/N] n
 Do you want to apply the experimental AMD Vega PCI reset patch? [y/N] N
 Do you want to install the kernel and its headers after compilation? [Y/n] Y
-Do you want to make this kernel the new default? [Y/n] 
+Do you want to make this kernel the new default? [Y/n]
 Do you want to make this kernel the new default? [Y/n] Y
 The newest available stable kernel version is 5.8.12. Kernels below 4.10 are not supported.
 Which version do you want to download? [5.8.12]
@@ -53,20 +64,21 @@ I just pressed enter at the end to install the 5.8.12 kernel in my case
 
 After rebooting, you should see your kernel has updated:
 ```
-mitch@lightning: ~ $ uname -a
-Linux lightning 5.8.12-acso #1 SMP Mon Sep 28 17:28:53 MST 2020 x86_64 x86_64 x86_64 GNU/Linux
+$ uname -r
+5.8.12-acso
 ```
 
 
-7. enable IOMMU separation and pass GPU PCI ID to vfio
-
-## a) enable IOMMU in grub
+## Step 7) enable IOMMU separation and pass GPU PCI ID to vfio
+### a) enable IOMMU in grub
 
 ```
 $ sudo vim /etc/default/grub
 ```
-add `intel_iommu=on iommu=pt` to GRUB_CMDLINE_LINUX. Example below:
 
+add `intel_iommu=on iommu=pt pcie_acs_override=downstream,multifunction` to GRUB_CMDLINE_LINUX. Example below:
+
+**NOTE:** you do not need `pcie_acs_override=downstream,multifunction` if you are not using acs patched kernel
 ```
 ---
 GRUB_CMDLINE_LINUX_DEFAULT="quiet splash"
@@ -74,18 +86,14 @@ GRUB_CMDLINE_LINUX="intel_iommu=on iommu=pt pcie_acs_override=downstream,multifu
 ---
 ```
 
-## b) update grub
+
+### b) update grub and reboot
 ```
 $ sudo update-grub
-```
-
-## c) reboot the system
-
-```
 $ reboot
 ```
 
-## d) determine GPU PCI ID and add to grub
+### c) determine GPU PCI ID and add to grub
 
 Determine IOMMU groupings with following command:
 ```
@@ -133,15 +141,14 @@ GRUB_CMDLINE_LINUX="intel_iommu=on iommu=pt pcie_acs_override=downstream,multifu
 ---
 ```
 
-## e) update grub and reboot again
+### d) update grub and reboot again
 
 ```
 $ sudo update-grub
 $ reboot
 ```
 
-
-## f) verify vfio-pci is controlling GPU
+### e) verify vfio-pci is controlling GPU
 
 
 Run the following command to list pci devices and their info:
@@ -178,12 +185,4 @@ Notice the text `Kernel driver in use: vfio-pci` If it says nouveau there instea
 
 
 
-8. Have Windows 10 ISO and virtio drivers downloaded
-
-
-
-
-
-
-
-
+## 8. Have Windows 10 ISO and virtio drivers downloaded
