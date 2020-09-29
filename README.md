@@ -44,7 +44,9 @@ Linux lightning 5.8.12-acso #1 SMP Mon Sep 28 17:28:53 MST 2020 x86_64 x86_64 x8
 ```
 
 
-7. Edit grub to enable IOMMU
+7. enable IOMMU separation and pass GPU PCI ID to vfio
+
+## a) enable IOMMU in grub
 
 ```
 $ sudo vim /etc/default/grub
@@ -54,15 +56,18 @@ add `intel_iommu=on iommu=pt` to GRUB_CMDLINE_LINUX. Example below:
 ```
 ---
 GRUB_CMDLINE_LINUX_DEFAULT="quiet splash"
-GRUB_CMDLINE_LINUX="intel_iommu=on iommu=pt"
+GRUB_CMDLINE_LINUX="intel_iommu=on iommu=pt pcie_acs_override=downstream,multifunction"
 ---
 ```
 
-update grub:
-```sudo update-grub```
+## b) update grub
+```
+$ sudo update-grub
+```
 
+## c) reboot the system
 
-reboot the system.
+## d) determine GPU PCI ID and add to grub
 
 Determine IOMMU groupings with following command:
 ```
@@ -74,6 +79,25 @@ for d in /sys/kernel/iommu_groups/{0..999}/devices/*; do
 done;
 ```
 
+Find the GPU you want to passthrough with its audio controller. Example below:
+```
+---
+02:00.0 VGA compatible controller [0300]: NVIDIA Corporation TU104 [GeForce RTX 2080 Rev. A] [10de:1e87] (rev a1)
+02:00.1 Audio device [0403]: NVIDIA Corporation TU104 HD Audio Controller [10de:10f8] (rev a1)
+---
+```
 
+I am paying attention to the numbers before (rev a1), those are the PCI device IDs. I want to tell vfio to grab these PCI devices. So again we will modify /etc/default/grub as such:
+
+```
+GRUB_CMDLINE_LINUX_DEFAULT="quiet splash"
+GRUB_CMDLINE_LINUX="intel_iommu=on iommu=pt pcie_acs_override=downstream,multifunction vfio-pci.ids=10de:1e87,10de:10f8"
+```
+
+## e) update grub
+
+```
+$ sudo update-grub
+```
 
 
