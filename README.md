@@ -1,12 +1,14 @@
 # ubuntu_2004_vfio_guide
 
 # Hardware
-CPU             : i9-9900KF
-MOBO            : MSI MPG Z390 Gaming Edge AC (MS-7B17)
-GPU     (GUEST) : RTX 2080
-GPU     (HOST)  : random MSI GPU
-Storage (GUEST) : NVME M.2 Drive
-Storage (HOST)  : SATA SSD Drive
+| Component Type  | Model |
+| --------------  | ----- |
+| CPU             : i9-9900KF |
+| MOBO            : MSI MPG Z390 Gaming Edge AC (MS-7B17) |
+| GPU     (GUEST) : RTX 2080 |
+| GPU     (HOST)  : random MSI GPU |
+| Storage (GUEST) : NVME M.2 Drive |
+| Storage (HOST)  : SATA SSD Drive |
 
 # Setup
 
