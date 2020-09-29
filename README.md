@@ -174,8 +174,7 @@ $ lspci -nnv
 ---
 ```
 
-
-Congrats! vfio is now controlling the GPU. Now we can begin creating the Windows 10 VM
+Notice the text `Kernel driver in use: vfio-pci` If it says nouveau there instead of vfio-pci that means something is wrong. Otherwise, congrats! vfio is now controlling the GPU. Now we can begin creating the Windows 10 VM
 
 
 
