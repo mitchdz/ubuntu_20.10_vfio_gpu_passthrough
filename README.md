@@ -67,6 +67,10 @@ $ sudo update-grub
 
 ## c) reboot the system
 
+```
+$ reboot
+```
+
 ## d) determine GPU PCI ID and add to grub
 
 Determine IOMMU groupings with following command:
@@ -114,10 +118,47 @@ GRUB_CMDLINE_LINUX_DEFAULT="quiet splash"
 GRUB_CMDLINE_LINUX="intel_iommu=on iommu=pt pcie_acs_override=downstream,multifunction vfio-pci.ids=10de:1e87,10de:10f8"
 ```
 
-## e) update grub
+## e) update grub and reboot again
 
 ```
 $ sudo update-grub
+$ reboot
 ```
+
+
+## f) verify vfio-pci is controlling GPU
+
+
+Run the following command to list pci devices and their info:
+```
+$ lspci -nnv
+```
+
+```
+---
+02:00.0 VGA compatible controller [0300]: NVIDIA Corporation TU104 [GeForce RTX 2080 Rev. A] [10de:1e87] (rev a1) (prog-if 00 [VGA controller])
+	Subsystem: ASUSTeK Computer Inc. TU104 [GeForce RTX 2080 Rev. A] [1043:8660]
+	Flags: fast devsel, IRQ 10
+	Memory at b2000000 (32-bit, non-prefetchable) [disabled] [size=16M]
+	Memory at 90000000 (64-bit, prefetchable) [disabled] [size=256M]
+	Memory at a0000000 (64-bit, prefetchable) [disabled] [size=32M]
+	I/O ports at 3000 [disabled] [size=128]
+	Expansion ROM at b3000000 [disabled] [size=512K]
+	Capabilities: <access denied>
+	Kernel driver in use: vfio-pci
+	Kernel modules: nvidiafb, nouveau
+
+02:00.1 Audio device [0403]: NVIDIA Corporation TU104 HD Audio Controller [10de:10f8] (rev a1)
+	Subsystem: ASUSTeK Computer Inc. TU104 HD Audio Controller [1043:8660]
+	Flags: fast devsel, IRQ 11
+	Memory at b3080000 (32-bit, non-prefetchable) [disabled] [size=16K]
+	Capabilities: <access denied>
+	Kernel driver in use: vfio-pci
+	Kernel modules: snd_hda_intel
+
+---
+```
+
+
 
 
