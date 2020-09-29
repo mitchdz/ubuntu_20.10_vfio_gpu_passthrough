@@ -124,7 +124,7 @@ IOMMU Group 16 02:00.3 Serial bus controller [0c80]: NVIDIA Corporation TU104 US
 IOMMU Group 17 03:00.0 Non-Volatile memory controller [0108]: Samsung Electronics Co Ltd NVMe SSD Controller SM981/PM981/PM983 [144d:a808]
 ```
 
-I am paying attention to the numbers before (rev a1), those are the PCI device IDs. I want to tell vfio to grab these PCI devices. So again we will modify /etc/default/grub as such:
+I am paying attention to the numbers before (rev a1), those are the PCI device IDs. I want to tell vfio to grab these PCI devices. So again we will modify /etc/default/grub by adding `vfio-pci.ids=10de:1e87,10de:10f8` to GRUB_CMDLINE_LINUX as such:
 
 ```
 ---
