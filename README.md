@@ -12,6 +12,20 @@
 
 # Setup
 
+First, install the required software:
+```
+$ sudo apt install qemu-kvm \
+                   qemu-utils \
+                   libvirt-daemon-system \
+                   libvirt-clients \
+                   bridge-utils \
+                   virt-manager \
+                   ovmf \
+                   -y
+```
+
+
+
 1. Put Host GPU is in PCIe slot 1
 2. Put Guest GPU in PCIe slot 2
 3. Plug one monitor into first GPU, second monitor into second GPU
@@ -116,6 +130,7 @@ I am paying attention to the numbers before (rev a1), those are the PCI device I
 ---
 GRUB_CMDLINE_LINUX_DEFAULT="quiet splash"
 GRUB_CMDLINE_LINUX="intel_iommu=on iommu=pt pcie_acs_override=downstream,multifunction vfio-pci.ids=10de:1e87,10de:10f8"
+---
 ```
 
 ## e) update grub and reboot again
@@ -130,6 +145,7 @@ $ reboot
 
 
 Run the following command to list pci devices and their info:
+
 ```
 $ lspci -nnv
 ```
@@ -155,9 +171,19 @@ $ lspci -nnv
 	Capabilities: <access denied>
 	Kernel driver in use: vfio-pci
 	Kernel modules: snd_hda_intel
-
 ---
 ```
+
+
+Congrats! vfio is now controlling the GPU. Now we can begin creating the Windows 10 VM
+
+
+
+8. Have Windows 10 ISO and virtio drivers downloaded
+
+
+
+
 
 
 
