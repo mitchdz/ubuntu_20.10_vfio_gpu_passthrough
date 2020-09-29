@@ -1,4 +1,8 @@
-# ubuntu_2004_vfio_guide
+# Ubuntu 20.04 VFIO Windows 10 VM with PCI passthrough Guide
+
+These notes document the setup for my personal computer and situation. Your situation may *and probably is* quite a bit different. Use this guide as a reference.
+
+---
 
 # Hardware
 | Component Type  | Model |
@@ -10,9 +14,28 @@
 | Storage (GUEST) | NVME M.2 Drive |
 | Storage (HOST)  | SATA SSD Drive |
 
+---
+
 # Setup
 
-First, install the required software:
+## Step 1) Hook up required Hardware
+* Plug Host GPU is in PCIe slot 1
+* Plug Guest GPU in PCIe slot 2
+* Plug one monitor into first GPU, second monitor into second GPU
+* have two drives (one for Ubuntu host, one for Win10 guest)
+  * **NOTE:** I am using NVME for Win10 guest, Sata SSD for Ubuntu host because my motherboard
+  has only one IOMMU group for the sata controller. To circumvent this, you could purchase a PCIe->SATA adapter and pass through the PCIe->SATA device
+
+---
+
+## Step 2) Enable BIOS/UEFI features
+* Enable Intel VT-x and VT-d (For AMD chips it should be called SVM)
+
+---
+
+## Step 5) Install Ubuntu 20.04
+
+After installing Ubuntu 20.04, install the required software:
 ```
 $ sudo apt install qemu-kvm \
                    qemu-utils \
@@ -24,20 +47,7 @@ $ sudo apt install qemu-kvm \
                    -y
 ```
 
-
-
-## Step 1) Hook up required Hardware
-* Plug Host GPU is in PCIe slot 1
-* Plug Guest GPU in PCIe slot 2
-* Plug one monitor into first GPU, second monitor into second GPU
-* have two drives (one for Ubuntu host, one for Win10 guest)
-  * **NOTE:** I am using NVME for Win10 guest, Sata SSD for Ubuntu host because my motherboard
-  has only one IOMMU group for the sata controller. To circumvent this, you could purchase a PCIe->SATA adapter and pass through the PCIe->SATA device
-
-## Step 2) Enable BIOS/UEFI features
-* Enable Intel VT-x and VT-d (For AMD chips it should be called SVM)
-
-## Step 5) Install Ubuntu 20.04
+---
 
 ## Step 6) *build and compile linux kernel with ACS patch
 *Only if your motherboard/cpu does not properly separate IOMMU groups
@@ -50,12 +60,11 @@ https://gist.github.com/mdPlusPlus/031ec2dac2295c9aaf1fc0b0e808e21a
 Choose Keep local version currently installed. Then I selected this for the following:
 
 ```
-Do you want to get a [s]table, the newest [m]ainline release candidate or the newest kernel from your [r]epositories? [S/m/r] s
+Do you want to get a [s]table, the newest [m]ainline release candidate or the newest kernel from your [r]epositories? [S/m/r] S
 Do you want to apply the acs override patch? Kernels below 4.10 are not supported. [Y/n] Y
-Do you want to apply the experimental AMD AGESA patch to fix VFIO setups on AGESA 0.0.7.2 and newer? [y/N] n
+Do you want to apply the experimental AMD AGESA patch to fix VFIO setups on AGESA 0.0.7.2 and newer? [y/N] N
 Do you want to apply the experimental AMD Vega PCI reset patch? [y/N] N
 Do you want to install the kernel and its headers after compilation? [Y/n] Y
-Do you want to make this kernel the new default? [Y/n]
 Do you want to make this kernel the new default? [Y/n] Y
 The newest available stable kernel version is 5.8.12. Kernels below 4.10 are not supported.
 Which version do you want to download? [5.8.12]
@@ -68,6 +77,7 @@ $ uname -r
 5.8.12-acso
 ```
 
+---
 
 ## Step 7) enable IOMMU separation and pass GPU PCI ID to vfio
 ### a) enable IOMMU in grub
@@ -183,6 +193,6 @@ $ lspci -nnv
 
 Notice the text `Kernel driver in use: vfio-pci` If it says nouveau there instead of vfio-pci that means something is wrong. Otherwise, congrats! vfio is now controlling the GPU. Now we can begin creating the Windows 10 VM
 
-
+---
 
 ## 8. Have Windows 10 ISO and virtio drivers downloaded
