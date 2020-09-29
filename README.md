@@ -37,14 +37,42 @@ Which version do you want to download? [5.8.12]
 ```
 I just pressed enter at the end to install the 5.8.12 kernel in my case
 
+After rebooting, you should see your kernel has updated:
+```
+mitch@lightning: ~ $ uname -a
+Linux lightning 5.8.12-acso #1 SMP Mon Sep 28 17:28:53 MST 2020 x86_64 x86_64 x86_64 GNU/Linux
+```
 
 
+7. Edit grub to enable IOMMU
+
+```
+$ sudo vim /etc/default/grub
+```
+add `intel_iommu=on iommu=pt` to GRUB_CMDLINE_LINUX. Example below:
+
+```
+---
+GRUB_CMDLINE_LINUX_DEFAULT="quiet splash"
+GRUB_CMDLINE_LINUX="intel_iommu=on iommu=pt"
+---
+```
+
+update grub:
+```sudo update-grub```
 
 
+reboot the system.
 
-
-
-
+Determine IOMMU groupings with following command:
+```
+shopt -s nullglob
+for d in /sys/kernel/iommu_groups/{0..999}/devices/*; do
+    n=${d#*/iommu_groups/*}; n=${n%%/*}
+    printf 'IOMMU Group %s ' "$n"
+    lspci -nns "${d##*/}"
+done;
+```
 
 
 
