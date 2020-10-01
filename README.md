@@ -36,7 +36,7 @@ These notes document the setup for my personal computer and situation. Your situ
 ## Step 5) Install Ubuntu 20.04
 
 After installing Ubuntu 20.04, install the required software:
-```
+```bash
 $ sudo apt install qemu-kvm \
                    qemu-utils \
                    libvirt-daemon-system \
@@ -72,7 +72,7 @@ Which version do you want to download? [5.8.12]
 I just pressed enter at the end to install the 5.8.12 kernel in my case
 
 After rebooting, you should see your kernel has updated:
-```
+```bash
 $ uname -r
 5.8.12-acso
 ```
@@ -82,14 +82,14 @@ $ uname -r
 ## Step 7) enable IOMMU separation and pass GPU PCI ID to vfio
 ### a) enable IOMMU in grub
 
-```
+```bash
 $ sudo vim /etc/default/grub
 ```
 
 add `intel_iommu=on iommu=pt pcie_acs_override=downstream,multifunction` to GRUB_CMDLINE_LINUX. Example below:
 
 **NOTE:** you do not need `pcie_acs_override=downstream,multifunction` if you are not using acs patched kernel
-```
+```bash
 ---
 GRUB_CMDLINE_LINUX_DEFAULT="quiet splash"
 GRUB_CMDLINE_LINUX="intel_iommu=on iommu=pt pcie_acs_override=downstream,multifunction"
@@ -98,7 +98,7 @@ GRUB_CMDLINE_LINUX="intel_iommu=on iommu=pt pcie_acs_override=downstream,multifu
 
 
 ### b) update grub and reboot
-```
+```bash
 $ sudo update-grub
 $ reboot
 ```
@@ -106,7 +106,7 @@ $ reboot
 ### c) determine GPU PCI ID and add to grub
 
 Determine IOMMU groupings with following command:
-```
+```bash
 shopt -s nullglob
 for d in /sys/kernel/iommu_groups/{0..999}/devices/*; do
     n=${d#*/iommu_groups/*}; n=${n%%/*}
@@ -144,7 +144,7 @@ IOMMU Group 17 03:00.0 Non-Volatile memory controller [0108]: Samsung Electronic
 
 I am paying attention to the numbers before (rev a1), those are the PCI device IDs. I want to tell vfio to grab these PCI devices. So again we will modify /etc/default/grub by adding `vfio-pci.ids=10de:1e87,10de:10f8` to GRUB_CMDLINE_LINUX as such:
 
-```
+```bash
 ---
 GRUB_CMDLINE_LINUX_DEFAULT="quiet splash"
 GRUB_CMDLINE_LINUX="intel_iommu=on iommu=pt pcie_acs_override=downstream,multifunction vfio-pci.ids=10de:1e87,10de:10f8"
@@ -153,7 +153,7 @@ GRUB_CMDLINE_LINUX="intel_iommu=on iommu=pt pcie_acs_override=downstream,multifu
 
 ### d) update grub and reboot again
 
-```
+```bash
 $ sudo update-grub
 $ reboot
 ```
@@ -163,11 +163,11 @@ $ reboot
 
 Run the following command to list pci devices and their info:
 
-```
+```bash
 $ lspci -nnv
 ```
 
-```
+```bash
 ---
 02:00.0 VGA compatible controller [0300]: NVIDIA Corporation TU104 [GeForce RTX 2080 Rev. A] [10de:1e87] (rev a1) (prog-if 00 [VGA controller])
 	Subsystem: ASUSTeK Computer Inc. TU104 [GeForce RTX 2080 Rev. A] [1043:8660]
@@ -203,9 +203,8 @@ You can receive the ISO here - https://www.microsoft.com/en-us/software-download
 
 First, we need to determine what our networking situation is like. I am hardwired, and you really should be as well if you have gotten this far.
 
-```
+```bash
 $ ip a
-mitch@lightning: /etc/netplan $ ip a
 1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
     link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
     inet 127.0.0.1/8 scope host lo
@@ -234,7 +233,7 @@ the ethernet port that is being used it titled **eno2**. Notice the existence of
 To create the bridge we will use netplan.
 
 
-```
+```bash
 $ cd /etc/netplan/
 $ sudo cp 01-network-manager-all.yaml 01-network-manager-all.bak
 $ sudo vim 01-network-manager-all.yaml
@@ -242,7 +241,7 @@ $ sudo vim 01-network-manager-all.yaml
 
 edit the yaml file to look like such (filling in your own hardware device and desired IP addresses)
 
-```
+```yaml
 network:
   version: 2
   renderer: networkd
@@ -266,14 +265,14 @@ network:
 
 Update the interfaces
 
-```
+```bash
 $ sudo netplan apply
 ```
 
 Check the interfaces now
 
 
-```
+```bash
 $ ip a
 ---
 6: br0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP group default qlen 1000
@@ -326,19 +325,19 @@ $ ip a
 
 
 
-## Step 11) OPTIONAL (if you are stuck with 600x800 resolution) hide fact that OS is virtualized from CPU and GPU
+## Step 11) OPTIONAL (if you are stuck with 600x800 resolution, or NVidia error 43) hide fact that OS is virtualized from CPU and GPU
 
 Microsoft is a cool company that when they see their OS is being virtualized they send the Nvidia GPU the infamous error 43 so you will not be able to use Nvidia drivers, thus you will be stuck with a 600x800 window. To circumvent this we will need to add a few lines to the machine XML using virsh edit
 
 **note:** my virtual machine is titled 'win10', if you named yours something else, replace your name where win10 is
 
-```
+```bash
 virsh edit win10
 ```
 
 You will need to add the following lines `<vendor_id state="on" value="1234567890ab"/>`, `<ioapic driver="kvm"/>`, `<kvm> <hidden state="on"/> </kvm>` Manually. Below is the snippet from my XML file showcasing where you need to put the values.
 
-```
+```xml
 ---
 <features>
   <acpi/>
@@ -359,3 +358,10 @@ You will need to add the following lines `<vendor_id state="on" value="123456789
 ```
 
 virsh will use your default editor, so save from whatever editor you are using.
+
+This initial page will get you set up for a functional windows 10 VM. For more performance tuning, refer to [OPTIMIZATION.md](OPTIMIZATION.md)
+
+# References
+Huge thanks to the following sources:
+https://wiki.archlinux.org/index.php/PCI_passthrough_via_OVMF
+https://mathiashueber.com/pci-passthrough-ubuntu-2004-virtual-machine/
