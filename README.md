@@ -2,19 +2,17 @@
 
 These notes document the setup for my personal computer and situation. Your situation may be *and probably is* quite a bit different. Use this guide as a reference.
 
----
 
 # Quickstart
 Below are the following links in the repository to get started
 * [Project Setup](SETUP.md)
 * [Optimization](OPTIMIZATION.md)
 
----
 
 # What is this repository?
 This repository documents the process of setting up a windows 10 gaming VM with near-native performance under an Ubuntu 20.04 host. The goal of this guide was to be able to reference this guide later if I want to do a clean build, but also create a guide that anyone could easily follow.
 
----
+
 
 # Acknowledgements
 Huge thanks to the following sources:
