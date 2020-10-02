@@ -199,6 +199,8 @@ You can receive the ISO here - https://www.microsoft.com/en-us/software-download
 
 ## Step 9) Create a Network Bridge
 
+**NOTE:** I no longer use a network bridge because using bridged mode with the e1000e model type seems to have limited upload speed. I now opt for using a USB C-> Ethernet adapter on my PCIe->USB Adapter that I passed through.
+
 First, we need to determine what our networking situation is like. I am hardwired, and you really should be as well if you have gotten this far.
 
 ```bash
