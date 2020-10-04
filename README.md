@@ -10,6 +10,7 @@ These notes document the setup for my personal computer and situation. Your situ
 Below are the following links in the repository to get started
 * [Project Setup](SETUP.md)
 * [Optimization](OPTIMIZATION.md)
+* [Software Compatibility](SOFTWARE_COMPATIBILITY.md)
 
 
 # What is this repository?
