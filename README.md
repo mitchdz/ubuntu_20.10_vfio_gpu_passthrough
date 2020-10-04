@@ -5,6 +5,17 @@ These notes document the setup for my personal computer and situation. Your situ
 
 ![3DMark Score](2020_10_1.PNG)
 
+# Goal
+The goal of this project is to create a windows 10 VM for gaming with the following:
+* low latency
+* high stability (no crashes/stutters)
+* near-native performance
+
+There are many guides out there that show you how to do this exact setup, but sometimes
+those guides sacrifice system stability for extra performance. My goal is to push my system as
+far as it can go while being as stable as if the VM was running natively.
+
+
 
 # Quickstart
 Below are the following links in the repository to get started
