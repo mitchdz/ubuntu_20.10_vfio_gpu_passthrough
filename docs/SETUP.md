@@ -5,10 +5,10 @@
 # Hardware
 | Component Type  | Model |
 | --------------  | ----- |
-| CPU             | i9-9900KF |
-| MOBO            | MSI MPG Z390 Gaming Edge AC (MS-7B17) |
+| CPU             | i7-10700 |
+| MOBO            | MSI Z490-A PRO ProSeries ATX |
 | GPU     (GUEST) | RTX 2080 |
-| GPU     (HOST)  | GTX 980Ti |
+| GPU     (HOST)  | host |
 | Storage (GUEST) | NVME M.2 Drive |
 | Storage (HOST)  | SATA SSD Drive |
 
@@ -31,9 +31,9 @@
 
 ---
 
-## Step 5) Install Ubuntu 20.04
+## Step 5) Install Ubuntu 20.10
 
-After installing Ubuntu 20.04, install the required software:
+After installing Ubuntu 20.10, install the required software:
 ```bash
 $ sudo apt install qemu-kvm \
                    qemu-utils \
