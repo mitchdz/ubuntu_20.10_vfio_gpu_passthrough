@@ -43,6 +43,7 @@ $ sudo apt install qemu-kvm \
                    virt-manager \
                    ovmf \
 		   flex \
+		   bison \
                    -y
 ```
 
