@@ -3,7 +3,7 @@
 These notes document the setup for my personal computer and situation. Your situation may be *and probably is* quite a bit different. Use this guide as a reference.
 
 
-![3DMark Score](2020_10_1.PNG)
+![3DMark Score](pics/2020_10_1.PNG)
 
 # Goal
 The goal of this project is to create a windows 10 VM for gaming with the following:
