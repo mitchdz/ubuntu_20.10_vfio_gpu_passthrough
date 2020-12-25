@@ -42,6 +42,7 @@ $ sudo apt install qemu-kvm \
                    bridge-utils \
                    virt-manager \
                    ovmf \
+		   flex \
                    -y
 ```
 
