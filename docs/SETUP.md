@@ -114,6 +114,46 @@ for d in /sys/kernel/iommu_groups/{0..999}/devices/*; do
 done;
 ```
 
+Here is an example of output that does **NOT** properly separate the GPU:
+
+```
+$ for d in /sys/kernel/iommu_groups/{0..999}/devices/*; do
+>     n=${d#*/iommu_groups/*}; n=${n%%/*}
+>     printf 'IOMMU Group %s ' "$n"
+>     lspci -nns "${d##*/}"
+> done;
+IOMMU Group 0 00:00.0 Host bridge [0600]: Intel Corporation Device [8086:9b43] (rev 05)
+IOMMU Group 1 00:01.0 PCI bridge [0604]: Intel Corporation Xeon E3-1200 v5/E3-1500 v5/6th Gen Core Processor PCIe Controller (x16) [8086:1901] (rev 05)
+IOMMU Group 1 01:00.0 VGA compatible controller [0300]: NVIDIA Corporation TU104 [GeForce RTX 2080 Rev. A] [10de:1e87] (rev a1)
+IOMMU Group 1 01:00.1 Audio device [0403]: NVIDIA Corporation TU104 HD Audio Controller [10de:10f8] (rev a1)
+IOMMU Group 1 01:00.2 USB controller [0c03]: NVIDIA Corporation TU104 USB 3.1 Host Controller [10de:1ad8] (rev a1)
+IOMMU Group 1 01:00.3 Serial bus controller [0c80]: NVIDIA Corporation TU104 USB Type-C UCSI Controller [10de:1ad9] (rev a1)
+IOMMU Group 2 00:08.0 System peripheral [0880]: Intel Corporation Xeon E3-1200 v5/v6 / E3-1500 v5 / 6th/7th/8th Gen Core Processor Gaussian Mixture Model [8086:1911]
+IOMMU Group 3 00:12.0 Signal processing controller [1180]: Intel Corporation Comet Lake PCH Thermal Controller [8086:06f9]
+IOMMU Group 4 00:14.0 USB controller [0c03]: Intel Corporation Comet Lake USB 3.1 xHCI Host Controller [8086:06ed]
+IOMMU Group 4 00:14.2 RAM memory [0500]: Intel Corporation Comet Lake PCH Shared SRAM [8086:06ef]
+IOMMU Group 5 00:16.0 Communication controller [0780]: Intel Corporation Comet Lake HECI Controller [8086:06e0]
+IOMMU Group 6 00:17.0 SATA controller [0106]: Intel Corporation Device [8086:06d2]
+IOMMU Group 7 00:1b.0 PCI bridge [0604]: Intel Corporation Comet Lake PCI Express Root Port #17 [8086:06c0] (rev f0)
+IOMMU Group 7 02:00.0 Non-Volatile memory controller [0108]: Samsung Electronics Co Ltd NVMe SSD Controller SM981/PM981/PM983 [144d:a808]
+IOMMU Group 8 00:1c.0 PCI bridge [0604]: Intel Corporation Device [8086:06b8] (rev f0)
+IOMMU Group 8 00:1c.4 PCI bridge [0604]: Intel Corporation Device [8086:06bc] (rev f0)
+IOMMU Group 8 00:1c.6 PCI bridge [0604]: Intel Corporation Device [8086:06be] (rev f0)
+IOMMU Group 8 04:00.0 Ethernet controller [0200]: Realtek Semiconductor Co., Ltd. RTL8125 2.5GbE Controller [10ec:8125] (rev 04)
+IOMMU Group 8 05:00.0 USB controller [0c03]: Fresco Logic FL1100 USB 3.0 Host Controller [1b73:1100] (rev 10)
+IOMMU Group 9 00:1d.0 PCI bridge [0604]: Intel Corporation Comet Lake PCI Express Root Port #9 [8086:06b0] (rev f0)
+IOMMU Group 9 06:00.0 Non-Volatile memory controller [0108]: Samsung Electronics Co Ltd NVMe SSD Controller SM981/PM981/PM983 [144d:a808]
+IOMMU Group 10 00:1f.0 ISA bridge [0601]: Intel Corporation Device [8086:0685]
+IOMMU Group 10 00:1f.4 SMBus [0c05]: Intel Corporation Comet Lake PCH SMBus Controller [8086:06a3]
+IOMMU Group 10 00:1f.5 Serial bus controller [0c80]: Intel Corporation Comet Lake PCH SPI Controller [8086:06a4]
+```
+
+
+Notice how the GPU is in Group 1 with the Processor. This is because the PCH uses the same lane for GPU1 and the CPU cores. This is not good for our case.
+
+
+Now for the example where the GPU __is__ properly separated:
+
 Find the GPU you want to passthrough with its audio controller. Example below:
 ```
 IOMMU Group 0 00:00.0 Host bridge [0600]: Intel Corporation 8th Gen Core 8-core Desktop Processor Host Bridge/DRAM Registers [Coffee Lake S] [8086:3e30] (rev 0a)
