@@ -44,6 +44,7 @@ $ sudo apt install qemu-kvm \
                    ovmf \
 		   flex \
 		   bison \
+		   libssl-dev \
                    -y
 ```
 
