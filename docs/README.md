@@ -25,7 +25,7 @@ Below are the following links in the repository to get started
 
 
 # What is this repository?
-This repository documents the process of setting up a windows 10 gaming VM with near-native performance under an Ubuntu 20.04 host. The goal of this guide was to be able to reference this guide later if I want to do a clean build, but also create a guide that anyone could easily follow.
+This repository documents the process of setting up a windows 10 gaming VM with near-native performance under an Ubuntu 20.10 host. The goal of this guide was to be able to reference this guide later if I want to do a clean build, but also create a guide that anyone could easily follow.
 
 
 # Acknowledgements
