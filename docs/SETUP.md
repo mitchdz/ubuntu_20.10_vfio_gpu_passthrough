@@ -8,7 +8,7 @@
 | CPU             | i7-10700 |
 | MOBO            | MSI Z490-A PRO ProSeries ATX |
 | GPU     (GUEST) | RTX 2080 |
-| GPU     (HOST)  | iGPU |
+| GPU     (HOST)  | GeForce GT 730 |
 | Storage (GUEST) | NVME M.2 Drive |
 | Storage (HOST)  | SATA SSD Drive |
 
